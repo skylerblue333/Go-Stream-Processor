@@ -1,0 +1,1 @@
+module go-stream-processor\n\ngo 1.21\n
