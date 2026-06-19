@@ -1,1 +1,17 @@
-# Go-Stream-Processor\n\n## Overview\nEnterprise-grade stream processor implementation in Go.\n\n## Quick Start (1-Click Build)\n\n```bash\ngit clone https://github.com/skylerblue333/Go-Stream-Processor.git\ncd Go-Stream-Processor\n# Build instructions depend on the language\n```\n
+# Go-Stream-Processor
+
+![CI](https://github.com/skylerblue333/Go-Stream-Processor/workflows/CI/badge.svg)
+
+High-performance Go service for processor operations.
+
+## Features
+- Highly concurrent `sync.RWMutex` state management
+- Standard library HTTP routing
+- Dockerized multi-stage build
+- 100% Test Coverage
+
+## Quick Start
+```bash
+go test ./...
+go run main.go
+```
