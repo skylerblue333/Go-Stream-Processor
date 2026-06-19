@@ -1,3 +1,3 @@
-module github.com/skylerblue333/go-stream-processor
+module github.com/skylerblue333/Go-Stream-Processor
 
 go 1.21
