@@ -1,12 +1,11 @@
-FROM golang:1.21-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
+FROM golang:1.26-alpine AS build
+WORKDIR /src
+COPY go.mod ./
+COPY cmd ./cmd
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags='-s -w' -o /sky-stream-aggregate ./cmd/server
 
-FROM alpine:latest
-WORKDIR /app
-COPY --from=builder /app/main .
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /sky-stream-aggregate /sky-stream-aggregate
 EXPOSE 8080
-CMD ["./main"]
+USER nonroot:nonroot
+ENTRYPOINT ["/sky-stream-aggregate"]
