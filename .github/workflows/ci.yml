@@ -1,13 +1,48 @@
-name: CI
-on: [push, pull_request]
+name: stream-aggregate-ci
+
+on:
+  push:
+    branches: [main, "product/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  verify:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
-      - run: go mod tidy
-      - run: go test ./... -v
-      - run: go build -o app ./cmd/server
+          go-version: '1.26.x'
+      - name: Format
+        run: test -z "$(gofmt -l .)"
+      - name: Vet
+        run: go vet ./...
+      - name: Tests
+        run: go test -v ./...
+      - name: Race tests
+        run: go test -race ./...
+      - name: Vulnerability scan
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+      - name: Build
+        run: CGO_ENABLED=0 go build -trimpath -o sky-stream-aggregate ./cmd/server
+      - name: Build image
+        run: docker build -t sky-stream-aggregate:ci .
+      - name: Verify non-root image and smoke
+        run: |
+          user="$(docker image inspect sky-stream-aggregate:ci --format '{{.Config.User}}')"
+          test -n "$user"
+          test "$user" != "0"
+          test "$user" != "root"
+          docker run -d --rm --name sky-stream-aggregate-ci -p 18083:8080 sky-stream-aggregate:ci
+          trap 'docker stop sky-stream-aggregate-ci >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:18083/healthz >/dev/null; then break; fi
+            sleep 0.25
+          done
+          curl --fail --silent http://127.0.0.1:18083/v1/events -H 'content-type: application/json' --data '{"key":"orders","value":2.5}' | grep -q '"accepted":true'
+          curl --fail --silent http://127.0.0.1:18083/v1/stats | grep -q '"total_events":1'
