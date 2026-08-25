@@ -1,44 +1,25 @@
-<!-- PORTFOLIO PROJECT PROFILE: maintained by the repository owner -->
+# Sky Stream Aggregate
 
-## Project profile and code-audit snapshot
+**Status: engineering beta.** A bounded single-process Go event aggregation service for small keyed numeric streams.
 
-**What this is:** **Go-Stream-Processor** is a public repository described as: “Enterprise-grade stream processor implementation in Go. #SkyCoin4444 #AI #Blockchain #DevOps #Innovation” Its dominant language signals are **Go (2 files)**.
+## Implemented
 
-**Why it has value:** Its value is best understood through the implementation evidence currently present in the repository: **17 tracked files** were observed in the shallow audit, with the source structure and existing documentation providing the project’s specific context. This README does not treat a prototype, experiment, or archive as a production system without supporting evidence.
+- `POST /v1/events` accepts `{ "key": string, "value": number }`.
+- Keys are bounded to 64 safe characters with a 256-key cardinality limit.
+- Values must be finite and within ±1e12.
+- Concurrency-safe per-key count and sum aggregation.
+- Total and rejected-event counters.
+- Strict single-object JSON parsing with unknown-field rejection and 4 KiB request bound.
+- `/healthz`, `/readyz`, and `GET /v1/stats` endpoints.
+- HTTP server timeouts and graceful shutdown.
+- Go 1.26 fmt/vet/test/race/govulncheck/build gates and non-root container smoke tests.
 
-**Implementation evidence:** 1 test-related file(s) detected; 3 dependency or package manifest(s) detected; 2 build/CI/infrastructure signal(s) detected; and 3 documentation or governance file(s) detected. Test filenames observed include `cmd/server/main_test.go`. Dependency or package files include `go.mod`, `go.sum`, `package.json`. Build, CI, or infrastructure signals include `Dockerfile`, `.github/workflows/ci.yml`.
+## Scope limitations
 
-**Current status:** The repository is tracked on the `main` branch. The existing source tree, configuration, tests, workflows, and documentation remain authoritative for supported behavior and maturity. A code audit is not a production-readiness certification, and the presence of a test or workflow file does not establish that all checks pass.
+This is an **in-memory single-node aggregator**, not a distributed stream platform. It does not provide Kafka/Pulsar integration, durable offsets, event replay, windows by event time, watermarks, exactly-once processing, persistence, partitioning, cross-node coordination, tenant isolation, authentication, HA, or production deployment.
 
-**Relationship to the wider portfolio:** This repository is one focused component of the broader Skyler Blue Spillers portfolio across AI, software engineering, cloud and DevOps, cybersecurity, blockchain, finance, education, social systems, and creative work. It may provide a service boundary, implementation pattern, experiment, archive, or reusable idea for related repositories. Treat repositories as technical dependencies only where documented interfaces and verified project requirements support that relationship.
+All state resets when the process restarts.
 
-**Quality and security note:** No obvious secret-like pattern was detected by the limited static scan; this is not a substitute for a security audit. No TODO/FIXME marker was detected in the scanned text files.
+## SKYCOIN4444 integration
 
----
-
-# Go Stream Processor
-
-![GitHub stars](https://img.shields.io/github/stars/skylerblue333/Go-Stream-Processor?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/skylerblue333/Go-Stream-Processor?style=flat-square)
-
-## 🌟 Overview
-**Go-Stream-Processor** is a professional-grade project within the **SkyCoin4444** ecosystem. It focuses on delivering high-value solutions in the domain of **Go**.
-
-## 🚀 Key Features
-- **Scalable Architecture**: Designed for enterprise-level growth and performance.
-- **Modern Standards**: Implements best practices for clean code and maintainability.
-- **Robust Integration**: Built to work seamlessly within modern cloud-native environments.
-
-## 🛠️ Technology Stack
-- **Primary Domain**: Go
-- **Ecosystem**: SkyCoin4444 Digital Platform
-
-## 📂 Structure
-The project is organized into a modular structure to ensure clarity and ease of development.
-
-## 👨‍💻 Author
-**Skyler Blue Spillers**
-*Professional Chess Player & Software Engineer*
-
----
-*Powered by SkyCoin4444*
+Use this service for bounded ephemeral counters/sums or as a reference stream-processing contract. Durable event storage, broker consumption, identity, persistence, and distributed processing must remain separately verified concerns.
